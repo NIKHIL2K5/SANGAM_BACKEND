@@ -1,13 +1,26 @@
-
-export const getCurrentUserProfile = async (request, response) => {
-    if (!request.user) return response.status(401).json({ message: 'Not authenticated' });
-    response.status(200).json(request.user);
-};
 import User from "../models/User.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { generateToken } from "../utils/generateToken.js";
 
+export const getCurrentUserProfile = async (request, response) => {
+    if (!request.user) return response.status(401).json({ message: 'Not authenticated' });
+    response.status(200).json(request.user);
+};
+
+export const searchUsers = async (request, response) => {
+    try {
+        const q = (request.query.q || "").toString().trim();
+        if (!q) return response.status(200).json([]);
+        const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+        const users = await User.find({ $or: [{ username: regex }, { email: regex }] })
+            .select("_id username profilepic email")
+            .limit(20);
+        response.status(200).json(users);
+    } catch (error) {
+        response.status(500).json({ message: error.message })
+    }
+}
 
 export const registerUser = async (request, response) => {
     try {
