@@ -40,9 +40,13 @@ const connect = async () => {
 };
 
 export function initSocket(httpServer) {
+    const allowedOrigins = (process.env.FRONTEND_ORIGIN || "http://localhost:5173")
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
     const io = new Server(httpServer, {
         cors: {
-            origin: "http://localhost:5173",
+            origin: allowedOrigins,
             credentials: true
         }
     })
@@ -221,8 +225,12 @@ mongoose.connection.on("disconnected", () => {
 // trust proxy so secure cookies work behind Render/Proxies
 app.set('trust proxy', 1)
 
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || "http://localhost:5173")
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 app.use(cors({
-    origin: ["http://localhost:5173"],
+    origin: allowedOrigins,
     credentials: true
 }))
 app.use(cookieParser())
