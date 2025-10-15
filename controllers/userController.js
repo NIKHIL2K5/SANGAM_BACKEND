@@ -35,13 +35,15 @@ export const registerUser = async (request, response) => {
         const token = generateToken(user._id);
         const userObject = user.toObject();
         delete userObject.password;
+        const isProd = process.env.NODE_ENV === "production";
+        const cookieOpts = {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: isProd ? "none" : "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        };
         response
-            .cookie("token", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            })
+            .cookie("token", token, cookieOpts)
             .status(201)
             .json({ message: "User registered Successfully", user: userObject });
     } catch (error) {
@@ -60,13 +62,15 @@ export const loginUser = async (request, response) => {
         const token = generateToken(user._id);
         const userObject = user.toObject();
         delete userObject.password;
+        const isProd = process.env.NODE_ENV === "production";
+        const cookieOpts = {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: isProd ? "none" : "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        };
         response
-            .cookie("token", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            })
+            .cookie("token", token, cookieOpts)
             .status(200)
             .json({ user: userObject });
     } catch (error) {
