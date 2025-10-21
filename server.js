@@ -40,20 +40,16 @@ const connect = async () => {
 };
 
 export function initSocket(httpServer) {
-    const allowedOrigins = (process.env.FRONTEND_ORIGIN || "http://localhost:5173")
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
     const io = new Server(httpServer, {
         cors: {
-            origin: allowedOrigins,
+            origin: "http://localhost:5173",
             credentials: true
         }
     })
 
     io.use(async (socket, next) => {
         try {
-           
+
             const cookieHeader = socket.handshake.headers?.cookie || "";
             const cookies = Object.fromEntries(
                 cookieHeader.split(";").map(c => c.trim()).filter(Boolean).map(c => {
@@ -72,7 +68,7 @@ export function initSocket(httpServer) {
             if (user) socket.user = { _id: String(user._id), username: user.username };
             return next();
         } catch (err) {
-          
+
             return next();
         }
     })
@@ -80,7 +76,6 @@ export function initSocket(httpServer) {
     io.on("connection", (socket) => {
         console.log("User connected", socket.id)
         socket.emit("connected", { socketId: socket.id })
-        // Join personal room if authenticated
         if (socket.user?._id) {
             socket.join(`user:${socket.user._id}`);
         }
@@ -91,11 +86,11 @@ export function initSocket(httpServer) {
             socket.to(roomId).emit("user:joined", { socketId: socket.id, roomId });
 
             try {
-                // For DM rooms: dm:<userA>_<userB> (sorted ids)
+
                 if (roomId.startsWith("dm:")) {
                     const ids = roomId.slice(3).split("_");
                     if (ids.length === 2) {
-                        // Find or create chat document for these participants
+
                         const [a, b] = ids;
                         let chat = await Chat.findOne({ participants: { $all: [a, b], $size: 2 } });
                         if (!chat) {
@@ -143,7 +138,7 @@ export function initSocket(httpServer) {
                 const from = socket.user?._id ?? "anon";
                 let messageId = randomUUID();
 
-                // Persist for DM rooms
+
                 if (roomId.startsWith("dm:")) {
                     const ids = roomId.slice(3).split("_");
                     if (ids.length === 2) {
@@ -157,7 +152,7 @@ export function initSocket(httpServer) {
                         const last = chat.messages[chat.messages.length - 1];
                         messageId = String(last._id);
 
-                        // Also deliver to recipient's personal room if they are not in the DM room
+
                         const other = (from === a ? b : a);
                         const dmRoom = io.sockets.adapter.rooms.get(roomId);
                         const userRoom = io.sockets.adapter.rooms.get(`user:${other}`);
@@ -213,6 +208,7 @@ export function initSocket(httpServer) {
 
         socket.on("disconnect", () => { })
     })
+    return io
 }
 
 mongoose.connection.on("connected", () => {
@@ -222,15 +218,10 @@ mongoose.connection.on("disconnected", () => {
     console.log("Failed to connect to database")
 })
 
-// trust proxy so secure cookies work behind Render/Proxies
 app.set('trust proxy', 1)
 
-const allowedOrigins = (process.env.FRONTEND_ORIGIN || "http://localhost:5173")
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
 app.use(cors({
-    origin: allowedOrigins,
+    origin: "http://localhost:5173",
     credentials: true
 }))
 app.use(cookieParser())

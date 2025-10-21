@@ -28,12 +28,12 @@ export const createPost = async (req, res) => {
       mediaUrl = result.secure_url;
     }
 
-    // 🧩 Validation
+    
     if (!content?.trim() && !mediaUrl) {
       return res.status(400).json({ message: "Post must have text or media." });
     }
 
-    // 🧱 Save post to database
+
     const post = new Post({
       author,
       content,

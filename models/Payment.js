@@ -21,11 +21,11 @@ const paymentScheme = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['UPI', 'Wallet'],
+        enum: ['UPI', 'Wallet','card'],
         require: true
     },
     transactionId: String
-});
+},{timestamps:true});
 
 
 export default mongoose.model("Payment", paymentScheme);

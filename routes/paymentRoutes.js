@@ -1,10 +1,11 @@
-import express from 'express'
-import {createPayment,getPaymentbyUser} from '../controllers/paymentController.js';
+import express from 'express';
+import { createPayment, confirmPayment, getPaymentbyUser } from '../controllers/paymentController.js';
 import auth from '../middleware/authMiddleware.js';
 
-const router=express.Router()
+const router = express.Router();
 
-router.post('/',auth,createPayment)
-router.get('/:userId',auth,getPaymentbyUser)
+router.post('/create-checkout-session', auth, createPayment);
+router.post('/confirm', auth, confirmPayment);
+router.get('/:userId', auth, getPaymentbyUser);
 
 export default router;
