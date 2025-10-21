@@ -42,7 +42,7 @@ const connect = async () => {
 export function initSocket(httpServer) {
     const io = new Server(httpServer, {
         cors: {
-            origin: "http://localhost:5173",
+            origin: ["https://sangamfrontend.vercel.app", "http://localhost:5173"],
             credentials: true
         }
     })
@@ -221,7 +221,7 @@ mongoose.connection.on("disconnected", () => {
 app.set('trust proxy', 1)
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["https://sangamfrontend.vercel.app", "http://localhost:5173"],
     credentials: true
 }))
 app.use(cookieParser())
